@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日快乐 🎂</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        /* 入场遮罩层 */
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 1s;
+        }
+
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 1.5em;
+            background: transparent;
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: pulseBtn 2s infinite;
+        }
+        
+        #start-btn:hover {
+            background: #ffd700;
+            color: #000;
+            box-shadow: 0 0 20px #ffd700;
+        }
+
+        @keyframes pulseBtn {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .container {
+            text-align: center;
+            color: white;
+            z-index: 10;
+            position: relative;
+            padding: 20px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #countdown-section {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #countdown {
+            font-size: 5em;
+            font-weight: bold;
+            background: linear-gradient(to bottom, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .countdown-tips {
+            font-size: 1.2em;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+
+        .emoji-circle {
+            font-size: 3em;
+            margin: 10px;
+            display: inline-block;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        #surprise-section {
+            display: none;
+            padding: 40px 20px;
+        }
+
+        .surprise h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 20px rgba(255,255,255,0.5);
+            animation: fadeIn 2s ease-in;
+        }
+
+        .timeline {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            padding: 30px;
+            margin: 30px auto;
+            backdrop-filter: blur(15px);
+            max-width: 800px;
+            text-align: left;
+            min-height: 200px;
+        }
+
+        .timeline h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        .timeline-item {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border-left: 4px solid #ffd700;
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: slideIn 1s ease-out forwards;
+        }
+
+        .timeline-year {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 8px;
+        }
+
+        .timeline-content {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        /* 解锁按钮样式 */
+        #unlock-next-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 35px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        #unlock-next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        #unlock-next-btn:active {
+            transform: translateY(0);
+        }
+
+        #unlock-next-btn.completed {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            cursor: default;
+            animation: none;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
+            50% { box-shadow: 0 5px 25px rgba(255, 215, 0, 0.8); }
+        }
+
+        .heart {
+            color: #ff6b9d;
+            display: inline-block;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            font-size: 1.2em;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .photo-slideshow {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            height: 500px;
+            margin: 30px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .photo-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .photo-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-slide.active {
+            opacity: 1;
+        }
+
+        .photo-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .photo-counter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            z-index: 10;
+        }
+
+        .photo-placeholder {
+            font-size: 4em;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .message-box {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px auto;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            max-width: 700px;
+            font-size: 1.4em;
+            line-height: 1.8;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(-30px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            #countdown { font-size: 3em; }
+            .surprise h1 { font-size: 2.5em; }
+            .photo-slideshow { height: 350px; }
+            .timeline { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="start-overlay">
+        <div style="font-size: 3em; margin-bottom: 30px;">🎁</div>
+        <button id="start-btn">开启生日惊喜</button>
+    </div>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="figure/music.mp3" type="audio/mpeg">
+        <source src="figure/music.mp4" type="audio/mp4">
+    </audio>
+
+    <canvas id="fireworks"></canvas>
+
+    <div id="countdown-section">
+        <div class="container">
+            <div class="emoji-circle">🎂</div>
+            <div class="emoji-circle" style="animation-delay: 0.3s;">💕</div>
+            <div class="emoji-circle" style="animation-delay: 0.6s;">🎁</div>
+            <div id="countdown">00:01:00</div>
+            <div class="countdown-tips">✨ 距离惊喜揭晓还有... ✨</div>
+        </div>
+    </div>
+
+    <div id="surprise-section">
+        <div class="container">
+            <div class="surprise">
+                <h1>🎂 生日快乐 佳丽同学 🎂</h1>
+                
+                <div class="timeline">
+                    <h2>
+                        <span class="heart">❤️</span> 我们的故事 <span class="heart">❤️</span>
+                    </h2>
+                    <div id="timelineContent"></div>
+                    <button id="unlock-next-btn">✨ 解锁下一段回忆 ✨</button>
+                </div>
+
+                <div class="photo-slideshow">
+                    <div class="photo-counter" id="photoCounter">1 / 100</div>
+                    <div class="photo-container" id="photoContainer"></div>
+                </div>
+
+                <div class="message-box">
+                    <p>💖 从2012到现在，我们已经一起走过了13年</p>
+                    <p>💖 感谢你一直以来的陪伴和包容</p>
+                    <p>💖 感谢你让我成为更好的自己</p>
+                    <p>💖 未来的每一天，我都想和你一起度过</p>
+                    <p style="margin-top: 20px; font-size: 1.3em;">
+                        <span class="heart">♥</span> 生日快乐，爱你哦！！！ <span class="heart">♥</span>
+                    </p>
+                </div>
+
+                <div style="margin-top: 30px; font-size: 2em;">
+                    🎈🎊🎉🎁🎂💐🌹✨💖💕💝
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const targetDate = new Date().getTime() + 60000;
+        const musicStartAt = 5;
+        const photoCount = 100;
+
+        const bgMusic = document.getElementById('bgMusic');
+        const startOverlay = document.getElementById('start-overlay');
+        const startBtn = document.getElementById('start-btn');
+        const countdownSection = document.getElementById('countdown-section');
+        const surpriseSection = document.getElementById('surprise-section');
+        
+        let musicUnlocked = false;
+        let fireworksActive = false;
+        let loadedImages = [];
+
+        // 预加载照片
+        function preloadImages() {
+            for(let i = 1; i <= photoCount; i++) {
+                const img = new Image();
+                img.src = `figure/${i}.jpg`;
+                img.onload = () => loadedImages.push(img);
+            }
+        }
+        preloadImages();
+
+        // 时间轴数据
+        const timelineData = [
+            { year: '2012年 💫', content: '我们在文峰中学相识，那时的我们还是青涩的高中生' },
+            { year: '2015年 📚', content: '陇西一中，我们一起补习，一起为梦想努力' },
+            { year: '2016年 💘', content: '这一年，我们正式在一起了！从此开始了我们的爱情长跑' },
+            { year: '2016-2020年 💌', content: '四年异地，虽然相隔两地，但我们的心始终在一起' },
+            { year: '2020-2023年 🏠', content: '终于在西安相聚，三年的朝夕相处，是我最幸福的时光' },
+            { year: '2023-2025年 🌙', content: '再次异地，但我们依然初心不改，坚定不移' },
+            { year: '2025.10-2026.10 ✈️', content: '异国一年，距离再远也隔不断我们的思念' },
+            { year: '未来 ∞', content: '无论未来如何，我们会一直携手走下去 💕', special: true }
+        ];
+
+        let timelineIndex = 0;
+
+        function showNextTimelineItem() {
+            if (timelineIndex < timelineData.length) {
+                const item = timelineData[timelineIndex];
+                const timelineContent = document.getElementById('timelineContent');
+                const unlockBtn = document.getElementById('unlock-next-btn');
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'timeline-item';
+                if (item.special) {
+                    itemDiv.style.borderLeftColor = '#ff6b9d';
+                }
+                
+                itemDiv.innerHTML = `
+                    <div class="timeline-year" style="${item.special ? 'color: #ff6b9d;' : ''}">${item.year}</div>
+                    <div class="timeline-content">${item.content}</div>
+                `;
+                
+                timelineContent.appendChild(itemDiv);
+                timelineIndex++;
+                
+                // 如果还有更多故事,显示按钮;否则隐藏按钮并显示完成提示
+                if (timelineIndex < timelineData.length) {
+                    unlockBtn.style.display = 'block';
+                    unlockBtn.textContent = '✨ 解锁下一段回忆 ✨';
+                    unlockBtn.classList.remove('completed');
+                } else {
+                    unlockBtn.textContent = '💖 所有回忆已解锁 💖';
+                    unlockBtn.classList.add('completed');
+                    unlockBtn.style.cursor = 'default';
+                }
+                
+                // 滚动到新添加的内容
+                setTimeout(() => {
+                    itemDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        }
+
+        // 绑定解锁按钮点击事件
+        function initUnlockButton() {
+            const unlockBtn = document.getElementById('unlock-next-btn');
+            unlockBtn.addEventListener('click', () => {
+                if (timelineIndex < timelineData.length) {
+                    showNextTimelineItem();
+                }
+            });
+        }
+
+        // 照片轮播
+        const photoFiles = Array.from({length: 100}, (_, i) => `figure/${i + 1}.jpg`);
+        let currentPhotoIndex = 0;
+        let photoInterval;
+
+        function loadPhotos() {
+            const container = document.getElementById('photoContainer');
+            
+            photoFiles.forEach((filename, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'photo-slide';
+                if (index === 0) slide.classList.add('active');
+                
+                const img = document.createElement('img');
+                img.src = filename;
+                img.alt = `照片 ${index + 1}`;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'photo-placeholder';
+                    placeholder.textContent = '📷';
+                    slide.appendChild(placeholder);
+                };
+                
+                slide.appendChild(img);
+                container.appendChild(slide);
+            });
+            
+            startPhotoSlideshow();
+        }
+
+        function showPhoto(index) {
+            const slides = document.querySelectorAll('.photo-slide');
+            const counter = document.getElementById('photoCounter');
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            counter.textContent = `${index + 1} / 100`;
+            
+            currentPhotoIndex = index;
+        }
+
+        function startPhotoSlideshow() {
+            currentPhotoIndex = 0;
+            showPhoto(0);
+            
+            photoInterval = setInterval(() => {
+                currentPhotoIndex++;
+                if (currentPhotoIndex >= photoFiles.length) {
+                    currentPhotoIndex = 0;
+                }
+                showPhoto(currentPhotoIndex);
+            }, 3000);
+        }
+
+        // 开启按钮
+        startBtn.addEventListener('click', () => {
+            bgMusic.play().then(() => {
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+                musicUnlocked = true;
+            }).catch(e => console.log("Audio unlock failed", e));
+
+            startOverlay.style.opacity = '0';
+            setTimeout(() => startOverlay.remove(), 1000);
+        });
+
+        // 倒计时
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (musicUnlocked && distance < musicStartAt * 1000 && distance > 0 && bgMusic.paused) {
+                bgMusic.play();
+            }
+
+            if (distance < 0) {
+                clearInterval(timerInterval);
+                document.getElementById('countdown').innerHTML = "00:00:00";
+                
+                countdownSection.style.display = 'none';
+                surpriseSection.style.display = 'block';
+
+                if (musicUnlocked && bgMusic.paused) bgMusic.play();
+
+                startFireworks();
+                loadPhotos();
+                initUnlockButton(); // 初始化解锁按钮
+                
+                setTimeout(() => {
+                    showNextTimelineItem(); // 显示第一条故事
+                }, 2000);
+                
+                return;
+            }
+
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerHTML = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        const timerInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // 烟花系统
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        let rockets = [];
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        class Rocket {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.targetY = Math.random() * (canvas.height * 0.4) + canvas.height * 0.1;
+                this.speed = Math.random() * 3 + 6;
+                this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                this.trail = [];
+                this.exploded = false;
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.trail.push({x: this.x, y: this.y, alpha: 1});
+                if(this.trail.length > 8) this.trail.shift();
+
+                if (this.y <= this.targetY) {
+                    this.explode();
+                    return false;
+                }
+                return true;
+            }
+
+            draw() {
+                this.trail.forEach((p, i) => {
+                    ctx.globalAlpha = p.alpha * (i / this.trail.length);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+            }
+
+            explode() {
+                this.exploded = true;
+                const isPhotoFirework = Math.random() < 0.3 && loadedImages.length > 0;
+                
+                if (isPhotoFirework) {
+                    // 照片烟花：每次2-4张
+                    const photoNum = Math.floor(Math.random() * 3) + 2;
+                    for (let i = 0; i < photoNum; i++) {
+                        const photoImg = loadedImages[Math.floor(Math.random() * loadedImages.length)];
+                        const offsetX = (Math.random() - 0.5) * 300;
+                        const offsetY = (Math.random() - 0.5) * 200;
+                        
+                        for (let j = 0; j < 15; j++) {
+                            particles.push(new Particle(
+                                this.x + offsetX, 
+                                this.y + offsetY, 
+                                this.color, 
+                                true, 
+                                photoImg
+                            ));
+                        }
+                    }
+                } else {
+                    // 普通烟花
+                    const count = 100;
+                    for (let i = 0; i < count; i++) {
+                        particles.push(new Particle(this.x, this.y, this.color, false, null));
+                    }
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color, isPhoto, img) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.isPhoto = isPhoto;
+                this.img = img;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 5 + 2;
+                
+                this.vx = Math.cos(angle) * velocity;
+                this.vy = Math.sin(angle) * velocity;
+                
+                this.friction = 0.96;
+                this.gravity = 0.03;
+                this.life = 200 + Math.random() * 100;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.005 + 0.002;
+
+                this.size = isPhoto ? (Math.random() * 30 + 20) : (Math.random() * 3 + 1);
+            }
+
+            update() {
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+
+                if (this.alpha <= 0) return false;
+                return true;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha * 0.7;
+
+                if (this.isPhoto && this.img) {
+                    ctx.globalCompositeOperation = 'screen';
+                    ctx.drawImage(this.img, this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+                } else {
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function loop() {
+            if (!fireworksActive) {
+                requestAnimationFrame(loop);
+                return;
+            }
+
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = 'rgba(22, 33, 62, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.03) {
+                rockets.push(new Rocket());
+            }
+
+            rockets = rockets.filter(r => r.update());
+            rockets.forEach(r => r.draw());
+
+            particles = particles.filter(p => p.update());
+            particles.forEach(p => p.draw());
+
+            requestAnimationFrame(loop);
+        }
+
+        function startFireworks() {
+            fireworksActive = true;
+            loop();
+        }
+    </script>
+</body>
+</html>
